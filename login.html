@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Portal XI-C4</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kelas C4</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#4f46e5">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex items-center justify-center p-4">
+
+  <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl border border-slate-200 max-w-md w-full space-y-6">
+    
+    <div class="text-center space-y-2">
+      <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner">
+        🎓
+      </div>
+      <h2 class="text-2xl font-bold text-slate-900">Kelas XI-C4</h2>
+      <p class="text-xs text-slate-500">Pilih namamu dari daftar di bawah untuk masuk ke website</p>
+    </div>
+
+    <form id="formLogin" class="space-y-4">
+      <div>
+        <label for="selectSiswa" class="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
+          Nama Siswa
+        </label>
+        <select id="selectSiswa" class="w-full p-3 rounded-xl border border-slate-300 text-sm font-medium bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" required>
+          <option value="">-- Pilih Nama Kamu --</option>
+          </select>
+      </div>
+
+      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg transition text-sm flex items-center justify-center gap-2">
+        <span>Masuk ke Website</span>
+      </button>
+    </form>
+
+    <div class="text-center border-t pt-4">
+      <p class="text-[11px] text-slate-400">SMA Katolik St. Louis 1 Surabaya • Kelas XI-C4</p>
+    </div>
+
+  </div>
+
+  <script type="module">
+    import { db } from "./firebase-config.js";
+    import { collection, addDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+    // Daftar Siswa C4 (Tanpa Nomor Absen)
+    const daftarSiswaC4 = [
+      "Agatha Clara Muljono",
+      "Aileen Clarabelle Pranowo",
+      "Alyssa Aurelia Margono",
+      "Andrea Marie Kwesal",
+      "Beatrice Agatha Wibowo",
+      "Edward Miryason Perdana",
+      "Eileen Jessica Chandra Tjio",
+      "Elisabeth Annabelle Halim",
+      "Gabriel Davion Tjakra",
+      "Giovanni Kevin Pranata",
+      "Grace Elaine Thobias",
+      "Jane Clara",
+      "Jayden Yang Raharjo",
+      "Jesslyn Adelina Sidharto",
+      "Jonathan Agatha Putra",
+      "Jonathan Lyonell Tjandra",
+      "Joyce Quinn Oei",
+      "Julia Rosari Kurnia",
+      "Justin Denzel Darmawan",
+      "Keane Harsoyo",
+      "Lim Felix Christian",
+      "Lionel Christensen Wijaya",
+      "Louise Kevin Widjaja",
+      "Maria Yuliana Lie",
+      "Marlowe James Christianto",
+      "Nadyenka Naeva Tandiabang",
+      "Nathaniel Nelson Jonathan",
+      "Nicholas Kristian Sutanto",
+      "Peter Gani Tandio",
+      "Rafael Avelino",
+      "Raphael Jonathan Yeung",
+      "Roland Sugiharto",
+      "Valishia Sabrina Kusuma",
+      "Vincentius Danny Adrianto Tejo"
+    ];
+
+    // Populasikan Dropdown Nama Siswa
+    const select = document.getElementById("selectSiswa");
+    daftarSiswaC4.forEach(nama => {
+      const opt = document.createElement("option");
+      opt.value = nama;
+      opt.textContent = nama;
+      select.appendChild(opt);
+    });
+
+    // Handle Submit Form Login
+    document.getElementById("formLogin").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const namaTerpilih = select.value;
+
+      if (!namaTerpilih) {
+        alert("Silakan pilih nama kamu terlebih dahulu!");
+        return;
+      }
+
+      try {
+        // 1. Simpan sesi ke localStorage
+        localStorage.setItem("userLoggedIn", namaTerpilih);
+
+        // 2. Catat Riwayat Login ke Firestore (Database)
+        await addDoc(collection(db, "riwayat_login"), {
+          nama: namaTerpilih,
+          waktu_login: new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }),
+          timestamp: new Date()
+        });
+
+        // 3. Pindah ke Beranda
+        window.location.href = "index.html";
+      } catch (err) {
+        console.error("Gagal mencatat login:", err);
+        // Tetap izinkan masuk walau log gagal
+        window.location.href = "index.html";
+      }
+    });
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((reg) => console.log('PWA Service Worker terdaftar!', reg))
+          .catch((err) => console.error('PWA Gagal terdaftar:', err));
+      });
+    }
+  </script>
+</body>
+</html>
