@@ -135,15 +135,21 @@
           .catch((err) => console.error('PWA Gagal terdaftar:', err));
       });
     }
-    // Contoh logika saat tombol submit login diklik di login.html
-if (usernameInput === "pengurus" && passwordInput === "12345") {
-  // 1. Simpan tanda login
-  localStorage.setItem("userLoggedIn", usernameInput);
-  
-  // 2. Lempar kembali ke beranda atau halaman kas
-  window.location.href = "kas.html"; 
-} else {
-  alert("Username atau Password salah!");
+   // Panggil fungsi ini saat tombol Login diklik
+function prosesLogin() {
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  // Sesuaikan username & password pengurus kelas kamu
+  if (username === "pengurus" && password === "c4juara") {
+    // 1. Simpan tanda login di browser
+    localStorage.setItem("userLoggedIn", username);
+    
+    // 2. Langsung lempar ke halaman Kas Kelas
+    window.location.href = "kas.html";
+  } else {
+    alert("Username atau Password salah!");
+  }
 }
   </script>
   
