@@ -75,8 +75,17 @@
 </div>
 
 <script type="module">
+  // 1. Import db dari firebase-config.js milikmu
   import { db } from "./firebase-config.js";
-  import { collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+  // 2. Import fungsi Firestore dengan VERSI YANGSAMA (12.16.0)
+  import { 
+    collection, 
+    query, 
+    where, 
+    getDocs, 
+    addDoc 
+  } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
   // ELEMENTS
   const tabAnggota = document.getElementById('tab-btn-anggota');
@@ -141,11 +150,6 @@
       return;
     }
 
-    if (!db) {
-      alert("Koneksi Database belum siap. Silakan refresh halaman!");
-      return;
-    }
-
     try {
       const q = query(collection(db, "users"), where("no_induk", "==", noInduk));
       const querySnapshot = await getDocs(q);
@@ -181,11 +185,6 @@
 
     if (!noInduk || !password) {
       alert("Harap isi Nomor Induk dan Password!");
-      return;
-    }
-
-    if (!db) {
-      alert("Koneksi Database belum siap. Silakan refresh halaman!");
       return;
     }
 
