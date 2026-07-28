@@ -4,21 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Beranda - Kelas XI-C4</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kelas C4</title>
-
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4f46e5">
   <link rel="apple-touch-icon" href="icon-192.png">
-  
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans pb-12">
 
-  <nav class="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-50">
+  <div id="auth-container" class="bg-slate-900 text-white px-4 py-2 text-xs flex justify-between items-center shadow-inner">
+    <span id="user-status" class="font-medium text-slate-300">Memuat status akses...</span>
+    <div>
+      <button id="btn-login" onclick="bukaModalLogin()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1 rounded font-semibold transition">
+        Login Pengurus
+      </button>
+      <button id="btn-logout" onclick="logoutPengurus()" class="hidden bg-rose-600 hover:bg-rose-500 text-white px-3 py-1 rounded font-semibold transition">
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <nav class="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-40">
     <div class="container mx-auto flex justify-between items-center">
       <h1 class="text-xl font-bold">Kelas C4</h1>
       <div class="space-x-4 text-sm font-medium">
@@ -37,7 +42,7 @@
     <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 text-white p-6 rounded-2xl shadow-lg flex justify-between items-center flex-wrap gap-4">
       <div>
         <span class="bg-indigo-500/50 text-indigo-100 text-xs px-3 py-1 rounded-full font-medium">SMA Katolik St. Louis 1 Surabaya</span>
-        <h2 class="text-2xl md:text-3xl font-extrabold mt-2">Selamat Datang di Kelas XI-C4! </h2>
+        <h2 class="text-2xl md:text-3xl font-extrabold mt-2">Selamat Datang di Kelas XI-C4!</h2>
       </div>
       <div class="bg-white/10 backdrop-blur-md px-4 py-3 rounded-xl border border-white/20 text-center">
         <p class="text-xs text-indigo-200 font-semibold uppercase">Total Anggota Kelas</p>
@@ -66,8 +71,7 @@
         <a href="jadwal.html" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 underline">Lihat Jadwal Mingguan →</a>
       </div>
       
-      <div id="wadahJadwalEsok" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        </div>
+      <div id="wadahJadwalEsok" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3"></div>
     </div>
 
     <div class="space-y-3">
@@ -154,6 +158,122 @@
 
   </div>
 
+  <div id="modal-login" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 justify-center items-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+      <h3 class="text-lg font-bold text-slate-900 border-b pb-2">Login Pengurus Kelas</h3>
+      
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-semibold text-slate-600 block mb-1">Email Pengurus</label>
+          <input type="email" id="login-email" placeholder="pengurus@gmail.com" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600 block mb-1">Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+      </div>
+      
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="tutupModalLogin()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition">Batal</button>
+        <button onclick="prosesLogin()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition">Masuk</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithEmailAndPassword, 
+      onAuthStateChanged, 
+      signOut 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      doc, 
+      updateDoc, 
+      serverTimestamp, 
+      onSnapshot, 
+      query, 
+      orderBy 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBQy-HNnXOgFW5VV3ZF1HMKySUPN2n7ETs",
+      authDomain: "xi-c4-project.firebaseapp.com",
+      projectId: "xi-c4-project",
+      storageBucket: "xi-c4-project.firebasestorage.app",
+      messagingSenderId: "1052292104269",
+      appId: "1:1052292104269:web:7b678f29be0d117cad5c04",
+      measurementId: "G-RDYWD4VMQX"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+
+    // Monitor Status Login
+    onAuthStateChanged(auth, (user) => {
+      const editFormSection = document.getElementById("edit-kas-section");
+      const loginBtn = document.getElementById("btn-login");
+      const logoutBtn = document.getElementById("btn-logout");
+      const userStatusText = document.getElementById("user-status");
+
+      if (user) {
+        currentUser = user;
+        if (editFormSection) editFormSection.classList.remove("hidden");
+        if (loginBtn) loginBtn.classList.add("hidden");
+        if (logoutBtn) logoutBtn.classList.remove("hidden");
+        if (userStatusText) userStatusText.innerText = `Login: ${user.email} (Pengurus)`;
+      } else {
+        currentUser = null;
+        if (editFormSection) editFormSection.classList.add("hidden");
+        if (loginBtn) loginBtn.classList.remove("hidden");
+        if (logoutBtn) logoutBtn.classList.add("hidden");
+        if (userStatusText) userStatusText.innerText = "Mode: Tamu / Siswa (Hanya Lihat)";
+      }
+    });
+
+    // Pendaftaran Fungsi ke Scope Window (agar bisa dipanggil onclick="")
+    window.bukaModalLogin = () => {
+      const modal = document.getElementById("modal-login");
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    };
+
+    window.tutupModalLogin = () => {
+      const modal = document.getElementById("modal-login");
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    };
+
+    window.prosesLogin = async () => {
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("Login berhasil!");
+        window.tutupModalLogin();
+      } catch (error) {
+        alert("Login gagal: " + error.message);
+      }
+    };
+
+    window.logoutPengurus = async () => {
+      try {
+        await signOut(auth);
+        alert("Berhasil logout!");
+      } catch (error) {
+        alert("Gagal logout: " + error.message);
+      }
+    };
+  </script>
+
   <script>
     const jadwalMaster = {
       Senin: [
@@ -184,75 +304,31 @@
       ]
     };
 
-    const piketMaster = {
-      Senin: ["Peter Gani Tandio (29)", "Agatha Clara Muljono (1)", "Jonathan Lyonell Tjandra (16)", "Maria Yuliana Lie (24)", "Gabriel Davion Tjakra (9)", "Joyce Quinn Oei (17)", "Elisabeth Annabelle Halim (8)"],
-      Selasa: ["Roland Sugiharto (32)", "Andrea Marie Kwesal (4)", "Justin Denzel Darmawan (19)", "Grace Elaine Thobias (11)", "Louise Kevin Widjaja (23)", "Jesslyn Adelina Sidharto (14)", "Jane Clara (12)"],
-      Rabu: ["Edward Miryason Perdana (6)", "Julia Rosari Kurnia (18)", "Giovanni Kevin Pranata (10)", "Valishia Sabrina Kusuma (33)", "Keane Harsoyo (20)", "Beatrice Agatha Wibowo (5)", "Nadyenka Naeva Tandiabang (26)"],
-      Kamis: ["Vincentius Danny A. T. (34)", "Alyssa Aurelia Margono (3)", "Jayden Yang Raharjo (13)", "Eileen Jessica Chandra Tjio (7)", "Lionel Christensen Wijaya (22)", "Aileen Clarabelle Pranowo (2)", "Raphael Jonathan Yeung (31)"],
-      Jumat: ["Nathaniel Nelson Jonathan (27)", "Marlowe James Christianto (25)", "Lim Felix Christian (21)", "Nicholas Kristian Sutanto (28)", "Jonathan Agatha Putra (15)", "Rafael Avelino (30)"]
-    };
-
-    // Logika Deteksi Hari Esok
-    const hariMap = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
     const hariIniIndex = new Date().getDay();
-    
-    // Tentukan Hari Esok Sekolah (Jumat/Sabtu/Minggu -> Senin)
     let hariEsok = "Senin";
-    if (hariIniIndex === 0) hariEsok = "Senin";       // Minggu -> Senin
-    else if (hariIniIndex === 1) hariEsok = "Selasa";  // Senin -> Selasa
-    else if (hariIniIndex === 2) hariEsok = "Rabu";    // Selasa -> Rabu
-    else if (hariIniIndex === 3) hariEsok = "Kamis";   // Rabu -> Kamis
-    else if (hariIniIndex === 4) hariEsok = "Jumat";   // Kamis -> Jumat
-    else if (hariIniIndex === 5) hariEsok = "Senin";   // Jumat -> Senin
-    else if (hariIniIndex === 6) hariEsok = "Senin";   // Sabtu -> Senin
+    if (hariIniIndex === 1) hariEsok = "Selasa";
+    else if (hariIniIndex === 2) hariEsok = "Rabu";
+    else if (hariIniIndex === 3) hariEsok = "Kamis";
+    else if (hariIniIndex === 4) hariEsok = "Jumat";
 
     document.getElementById("judulHariEsok").textContent = `Jadwal Hari ${hariEsok}`;
-
     const wadah = document.getElementById("wadahJadwalEsok");
     wadah.innerHTML = "";
 
-    jadwalMaster[hariEsok].forEach(item => {
-      const box = document.createElement("div");
-      box.className = "bg-indigo-50/60 border border-indigo-100 p-3.5 rounded-xl space-y-1";
-      box.innerHTML = `
-        <span class="text-[10px] font-bold font-mono text-indigo-500 uppercase tracking-wider">${item.jam}</span>
-        <p class="font-bold text-slate-800 text-sm">${item.mapel}</p>
-      `;
-      wadah.appendChild(box);
-    });
-
-    const wadahPiket = document.getElementById("wadahPiketEsok");
-    wadahPiket.innerHTML = "";
-    piketMaster[hariEsok].forEach((nama, i) => {
-      const li = document.createElement("li");
-      li.className = "flex justify-between items-center py-1 border-b border-slate-100 last:border-none";
-      li.innerHTML = `<span>${i + 1}. ${nama.split(" (")[0]}</span><span class="font-mono bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[10px]">${nama.split("(")[1].replace(")", "")}</span>`;
-      wadahPiket.appendChild(li);
-    });
+    if (jadwalMaster[hariEsok]) {
+      jadwalMaster[hariEsok].forEach(item => {
+        const box = document.createElement("div");
+        box.className = "bg-indigo-50/60 border border-indigo-100 p-3.5 rounded-xl space-y-1";
+        box.innerHTML = `
+          <span class="text-[10px] font-bold font-mono text-indigo-500 uppercase tracking-wider">${item.jam}</span>
+          <p class="font-bold text-slate-800 text-sm">${item.mapel}</p>
+        `;
+        wadah.appendChild(box);
+      });
+    }
   </script>
 
   <script>
-  // Cek apakah user sudah login
-  const loggedInUser = localStorage.getItem("userLoggedIn");
-
-  if (!loggedInUser) {
-    // Jika belum login, lempar ke halaman login.html
-    window.location.href = "login.html";
-  } else {
-    // Tampilkan nama di Navbar
-    document.getElementById("userBadge").classList.remove("hidden");
-    document.getElementById("userBadge").classList.add("flex");
-    document.getElementById("namaUserAktif").textContent = loggedInUser;
-  }
-
-  function logoutUser() {
-    if (confirm("Apakah kamu yakin ingin keluar / ganti nama?")) {
-      localStorage.removeItem("userLoggedIn");
-      window.location.href = "login.html";
-    }
-  }
-</script>
-<script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
@@ -261,165 +337,5 @@
       });
     }
   </script>
-  <script type="module">
-  // Import SDK Firebase yang kita butuhkan
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { 
-    getAuth, 
-    signInWithEmailAndPassword, 
-    onAuthStateChanged, 
-    signOut 
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { 
-    getFirestore, 
-    collection, 
-    addDoc, 
-    doc, 
-    updateDoc, 
-    serverTimestamp, 
-    onSnapshot, 
-    query, 
-    orderBy 
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-  // Config kamu
-  const firebaseConfig = {
-    apiKey: "AIzaSyBQy-HNnXOgFW5VV3ZF1HMKySUPN2n7ETs",
-    authDomain: "xi-c4-project.firebaseapp.com",
-    projectId: "xi-c4-project",
-    storageBucket: "xi-c4-project.firebasestorage.app",
-    messagingSenderId: "1052292104269",
-    appId: "1:1052292104269:web:7b678f29be0d117cad5c04",
-    measurementId: "G-RDYWD4VMQX"
-  };
-
-  // Inisialisasi
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-
-  // Variable Global untuk status user
-  let currentUser = null;
-
-  // -------------------------------------------------------------
-  // 1. CEK STATUS LOGIN (Pengurus vs Siswa Biasa)
-  // -------------------------------------------------------------
-  onAuthStateChanged(auth, (user) => {
-    const editFormSection = document.getElementById("edit-kas-section"); // ID elemen form edit/tambah kas
-    const loginBtn = document.getElementById("btn-login");
-    const logoutBtn = document.getElementById("btn-logout");
-    const userStatusText = document.getElementById("user-status");
-
-    if (user) {
-      // Jika Pengurus Login
-      currentUser = user;
-      if (editFormSection) editFormSection.style.display = "block"; // Tampilkan form edit
-      if (loginBtn) loginBtn.style.display = "none";
-      if (logoutBtn) logoutBtn.style.display = "inline-block";
-      if (userStatusText) userStatusText.innerText = `Login sebagai: ${user.email} (Pengurus)`;
-    } else {
-      // Jika Siswa / Publik (Hanya View)
-      currentUser = null;
-      if (editFormSection) editFormSection.style.display = "none"; // Sembunyikan form edit
-      if (loginBtn) loginBtn.style.display = "inline-block";
-      if (logoutBtn) logoutBtn.style.display = "none";
-      if (userStatusText) userStatusText.innerText = "Mode: Tamu / Siswa (Hanya Lihat)";
-    }
-  });
-
-  // -------------------------------------------------------------
-  // 2. FUNGSI LOG AKTIVITAS (Audit Trail / Monitoring)
-  // -------------------------------------------------------------
-  async function logActivity(action, detail) {
-    if (!currentUser) return;
-
-    try {
-      await addDoc(collection(db, "activity_logs"), {
-        userEmail: currentUser.email,
-        action: action, // Misal: "UPDATE_KAS" / "ADD_KAS"
-        detail: detail, // Misal: "Mengubah kas Budi dari 0 jadi 10000"
-        timestamp: serverTimestamp()
-      });
-    } catch (error) {
-      console.error("Gagal mencatat log:", error);
-    }
-  }
-
-  // -------------------------------------------------------------
-  // 3. CONTOH FUNGSI UPDATE KAS (Otomatis Catat Log)
-  // -------------------------------------------------------------
-  async function updateKasSiswa(siswaId, namaSiswa, nominalLama, nominalBaru) {
-    if (!currentUser) {
-      alert("Akses ditolak! Anda bukan pengurus.");
-      return;
-    }
-
-    try {
-      // Update data di Firestore
-      const kasRef = doc(db, "kas_data", siswaId);
-      await updateDoc(kasRef, {
-        nominal: nominalBaru,
-        lastUpdatedBy: currentUser.email,
-        updatedAt: serverTimestamp()
-      });
-
-      // Catat Log Aktivitas
-      await logActivity(
-        "EDIT_KAS", 
-        `Mengubah saldo kas ${namaSiswa} dari Rp${nominalLama} menjadi Rp${nominalBaru}`
-      );
-
-      alert("Data kas berhasil diperbarui!");
-    } catch (err) {
-      alert("Gagal update data: " + err.message);
-    }
-  }
-
-  // -------------------------------------------------------------
-  // 4. MONITORING LOG REAL-TIME (Untuk Halaman Admin/Monitoring)
-  // -------------------------------------------------------------
-  const logContainer = document.getElementById("log-list");
-  if (logContainer) {
-    const q = query(collection(db, "activity_logs"), orderBy("timestamp", "desc"));
-    
-    onSnapshot(q, (snapshot) => {
-      logContainer.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const log = doc.data();
-        const time = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleString('id-ID') : 'Memuat...';
-        
-        const logItem = document.createElement("div");
-        logItem.className = "log-item";
-        logItem.innerHTML = `
-          <strong>[${time}]</strong> ${log.userEmail} <br/>
-          <span style="color: #2563eb;">${log.action}</span>: ${log.detail}
-        `;
-        logContainer.appendChild(logItem);
-      });
-    });
-  }
-</script>
-  <div id="auth-container" style="padding: 10px; background: #f1f5f9; border-bottom: 1px solid #cbd5e1; display: flex; justify-content: space-between; align-items: center;">
-  <span id="user-status" style="font-weight: bold;">Memuat status...</span>
-  
-  <div>
-    <button id="btn-login" onclick="bukaModalLogin()" style="padding: 6px 12px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer;">Login Pengurus</button>
-    
-    <button id="btn-logout" onclick="logoutPengurus()" style="display: none; padding: 6px 12px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer;">Logout</button>
-  </div>
-</div>
-
-<div id="modal-login" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 999;">
-  <div style="background: white; padding: 20px; border-radius: 8px; width: 300px;">
-    <h3 style="margin-top: 0;">Login Pengurus</h3>
-    <input type="email" id="login-email" placeholder="Email Pengurus" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;">
-    <input type="password" id="login-password" placeholder="Password" style="width: 100%; margin-bottom: 10px; padding: 8px; box-sizing: border-box;">
-    
-    <div style="display: flex; justify-content: space-between;">
-      <button onclick="prosesLogin()" style="padding: 6px 12px; background: #16a34a; color: white; border: none; border-radius: 4px; cursor: pointer;">Masuk</button>
-      <button onclick="tutupModalLogin()" style="padding: 6px 12px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer;">Batal</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
