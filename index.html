@@ -372,5 +372,14 @@ if (user) {
   // Kamu bisa pakai variabel 'user' ini untuk menyapa atau membatasi fitur
 }
 </script>
+  <script>
+  // Cek apakah pengguna sudah login
+  const user = localStorage.getItem("userLoggedIn");
+
+  // Jika BELUM login, langsung alihkan ke halaman login
+  if (!user) {
+    window.location.href = "login.html";
+  }
+</script>
 </body>
 </html>
