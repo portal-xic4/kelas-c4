@@ -261,5 +261,143 @@
       });
     }
   </script>
+  <script type="module">
+  // Import SDK Firebase yang kita butuhkan
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { 
+    getAuth, 
+    signInWithEmailAndPassword, 
+    onAuthStateChanged, 
+    signOut 
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    doc, 
+    updateDoc, 
+    serverTimestamp, 
+    onSnapshot, 
+    query, 
+    orderBy 
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // Config kamu
+  const firebaseConfig = {
+    apiKey: "AIzaSyBQy-HNnXOgFW5VV3ZF1HMKySUPN2n7ETs",
+    authDomain: "xi-c4-project.firebaseapp.com",
+    projectId: "xi-c4-project",
+    storageBucket: "xi-c4-project.firebasestorage.app",
+    messagingSenderId: "1052292104269",
+    appId: "1:1052292104269:web:7b678f29be0d117cad5c04",
+    measurementId: "G-RDYWD4VMQX"
+  };
+
+  // Inisialisasi
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Variable Global untuk status user
+  let currentUser = null;
+
+  // -------------------------------------------------------------
+  // 1. CEK STATUS LOGIN (Pengurus vs Siswa Biasa)
+  // -------------------------------------------------------------
+  onAuthStateChanged(auth, (user) => {
+    const editFormSection = document.getElementById("edit-kas-section"); // ID elemen form edit/tambah kas
+    const loginBtn = document.getElementById("btn-login");
+    const logoutBtn = document.getElementById("btn-logout");
+    const userStatusText = document.getElementById("user-status");
+
+    if (user) {
+      // Jika Pengurus Login
+      currentUser = user;
+      if (editFormSection) editFormSection.style.display = "block"; // Tampilkan form edit
+      if (loginBtn) loginBtn.style.display = "none";
+      if (logoutBtn) logoutBtn.style.display = "inline-block";
+      if (userStatusText) userStatusText.innerText = `Login sebagai: ${user.email} (Pengurus)`;
+    } else {
+      // Jika Siswa / Publik (Hanya View)
+      currentUser = null;
+      if (editFormSection) editFormSection.style.display = "none"; // Sembunyikan form edit
+      if (loginBtn) loginBtn.style.display = "inline-block";
+      if (logoutBtn) logoutBtn.style.display = "none";
+      if (userStatusText) userStatusText.innerText = "Mode: Tamu / Siswa (Hanya Lihat)";
+    }
+  });
+
+  // -------------------------------------------------------------
+  // 2. FUNGSI LOG AKTIVITAS (Audit Trail / Monitoring)
+  // -------------------------------------------------------------
+  async function logActivity(action, detail) {
+    if (!currentUser) return;
+
+    try {
+      await addDoc(collection(db, "activity_logs"), {
+        userEmail: currentUser.email,
+        action: action, // Misal: "UPDATE_KAS" / "ADD_KAS"
+        detail: detail, // Misal: "Mengubah kas Budi dari 0 jadi 10000"
+        timestamp: serverTimestamp()
+      });
+    } catch (error) {
+      console.error("Gagal mencatat log:", error);
+    }
+  }
+
+  // -------------------------------------------------------------
+  // 3. CONTOH FUNGSI UPDATE KAS (Otomatis Catat Log)
+  // -------------------------------------------------------------
+  async function updateKasSiswa(siswaId, namaSiswa, nominalLama, nominalBaru) {
+    if (!currentUser) {
+      alert("Akses ditolak! Anda bukan pengurus.");
+      return;
+    }
+
+    try {
+      // Update data di Firestore
+      const kasRef = doc(db, "kas_data", siswaId);
+      await updateDoc(kasRef, {
+        nominal: nominalBaru,
+        lastUpdatedBy: currentUser.email,
+        updatedAt: serverTimestamp()
+      });
+
+      // Catat Log Aktivitas
+      await logActivity(
+        "EDIT_KAS", 
+        `Mengubah saldo kas ${namaSiswa} dari Rp${nominalLama} menjadi Rp${nominalBaru}`
+      );
+
+      alert("Data kas berhasil diperbarui!");
+    } catch (err) {
+      alert("Gagal update data: " + err.message);
+    }
+  }
+
+  // -------------------------------------------------------------
+  // 4. MONITORING LOG REAL-TIME (Untuk Halaman Admin/Monitoring)
+  // -------------------------------------------------------------
+  const logContainer = document.getElementById("log-list");
+  if (logContainer) {
+    const q = query(collection(db, "activity_logs"), orderBy("timestamp", "desc"));
+    
+    onSnapshot(q, (snapshot) => {
+      logContainer.innerHTML = "";
+      snapshot.forEach((doc) => {
+        const log = doc.data();
+        const time = log.timestamp ? new Date(log.timestamp.toDate()).toLocaleString('id-ID') : 'Memuat...';
+        
+        const logItem = document.createElement("div");
+        logItem.className = "log-item";
+        logItem.innerHTML = `
+          <strong>[${time}]</strong> ${log.userEmail} <br/>
+          <span style="color: #2563eb;">${log.action}</span>: ${log.detail}
+        `;
+        logContainer.appendChild(logItem);
+      });
+    });
+  }
+</script>
 </body>
 </html>
