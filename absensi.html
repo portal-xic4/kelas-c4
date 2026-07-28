@@ -15,6 +15,15 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+  // Cek apakah user sudah login
+  const userLoggedIn = localStorage.getItem("userLoggedIn");
+
+  // Jika belum login, paksa lempar balik ke halaman login.html
+  if (!userLoggedIn) {
+    window.location.href = "login.html";
+  }
+</script>
 </head>
 
 
