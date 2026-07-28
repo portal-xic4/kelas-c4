@@ -9,31 +9,36 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://cdn.tailwindcss.com"></script>
  <script>
-  // Ambil data role dari LocalStorage
+ // 1. Ambil data role dari LocalStorage
 const userRole = localStorage.getItem("userRole");
 const userLoggedIn = localStorage.getItem("userLoggedIn");
 
-// Jika belum login sama sekali, lempar ke login
+// Jika belum login sama sekali, kembalikan ke halaman login
 if (!userLoggedIn) {
   alert("Silakan login terlebih dahulu!");
   window.location.href = "login.html";
 }
 
-// Jika login sebagai ANGGOTA, sembunyikan fitur aksi (Tambah/Edit/Hapus)
-document.addEventListener("DOMContentLoaded", () => {
-  if (userRole !== "pengurus") {
-    // Sembunyikan form input/tambah transaksi
-    const formTambah = document.getElementById("form-tambah-kas"); // sesuaikan ID form kamu
-    if (formTambah) formTambah.style.display = "none";
+// 2. Fungsi untuk mengatur tampilan berdasarkan Role
+function aturAksesRole() {
+  const isPengurus = (userRole === "pengurus");
 
-    // Sembunyikan semua tombol Edit & Hapus
-    const tombolAksi = document.querySelectorAll(".btn-edit, .btn-hapus, .btn-aksi");
-    tombolAksi.forEach(btn => btn.style.display = "none");
-
-    // Sembunyikan kolom "Aksi" di tabel jika ada
-    const kolomAksi = document.querySelectorAll(".col-aksi");
-    kolomAksi.forEach(col => col.style.display = "none");
+  // A. Sembunyikan Form Tambah Kas jika bukan pengurus
+  const formTambahContainer = document.getElementById("form-tambah-kas"); // Sesuaikan ID form kamu
+  if (formTambahContainer) {
+    formTambahContainer.style.display = isPengurus ? "block" : "none";
   }
+
+  // B. Sembunyikan Tombol Edit, Hapus, dan Kolom Aksi di Tabel jika bukan pengurus
+  const tombolAksi = document.querySelectorAll(".btn-edit, .btn-hapus, .kolom-aksi");
+  tombolAksi.forEach(el => {
+    el.style.display = isPengurus ? "" : "none";
+  });
+}
+
+// 3. Jalankan fungsi di atas setelah halaman dan tabel selesai dimuat
+document.addEventListener("DOMContentLoaded", () => {
+  aturAksesRole();
 });
 </script>
 </head>
