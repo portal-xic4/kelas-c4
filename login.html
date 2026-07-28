@@ -4,12 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Portal XI-C4</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kelas C4</title>
-
+  
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4f46e5">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -35,7 +30,7 @@
         </label>
         <select id="selectSiswa" class="w-full p-3 rounded-xl border border-slate-300 text-sm font-medium bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition" required>
           <option value="">-- Pilih Nama Kamu --</option>
-          </select>
+        </select>
       </div>
 
       <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-md hover:shadow-lg transition text-sm flex items-center justify-center gap-2">
@@ -53,8 +48,9 @@
     import { db } from "./firebase-config.js";
     import { collection, addDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
-    // Daftar Siswa C4 (Tanpa Nomor Absen)
+    // Daftar Siswa C4 (34 Siswa)
     const daftarSiswaC4 = [
+      "Pak Setya",
       "Agatha Clara Muljono",
       "Aileen Clarabelle Pranowo",
       "Alyssa Aurelia Margono",
@@ -114,7 +110,7 @@
         // 1. Simpan sesi ke localStorage
         localStorage.setItem("userLoggedIn", namaTerpilih);
 
-        // 2. Catat Riwayat Login ke Firestore (Database)
+        // 2. Catat Riwayat Login ke Firestore
         await addDoc(collection(db, "riwayat_login"), {
           nama: namaTerpilih,
           waktu_login: new Date().toLocaleString("id-ID", { timeZone: "Asia/Jakarta" }),
@@ -130,6 +126,7 @@
       }
     });
   </script>
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
