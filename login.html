@@ -135,6 +135,17 @@
           .catch((err) => console.error('PWA Gagal terdaftar:', err));
       });
     }
+    // Contoh logika saat tombol submit login diklik di login.html
+if (usernameInput === "pengurus" && passwordInput === "12345") {
+  // 1. Simpan tanda login
+  localStorage.setItem("userLoggedIn", usernameInput);
+  
+  // 2. Lempar kembali ke beranda atau halaman kas
+  window.location.href = "kas.html"; 
+} else {
+  alert("Username atau Password salah!");
+}
   </script>
+  
 </body>
 </html>
