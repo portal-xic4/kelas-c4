@@ -78,18 +78,16 @@
   import { db } from "./firebase-config.js";
   import { collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-  // --- ELEMENT SELECTION ---
+  // ELEMENTS
   const tabAnggota = document.getElementById('tab-btn-anggota');
   const tabPengurus = document.getElementById('tab-btn-pengurus');
-  
   const formPengurus = document.getElementById('form-pengurus');
   const formAnggotaLogin = document.getElementById('form-anggota-login');
   const formAnggotaDaftar = document.getElementById('form-anggota-daftar');
-
   const linkKeDaftar = document.getElementById('link-ke-daftar');
   const linkKeLogin = document.getElementById('link-ke-login');
 
-  // --- TAB SWITCHER LOGIC ---
+  // TAB SWITCHING
   tabPengurus.addEventListener('click', () => {
     tabPengurus.classList.add('active');
     tabAnggota.classList.remove('active');
@@ -106,7 +104,6 @@
     formAnggotaDaftar.classList.add('hidden');
   });
 
-  // --- TOGGLE DAFTAR VS LOGIN ANGGOTA ---
   linkKeDaftar.addEventListener('click', () => {
     formAnggotaLogin.classList.add('hidden');
     formAnggotaDaftar.classList.remove('hidden');
@@ -117,7 +114,7 @@
     formAnggotaLogin.classList.remove('hidden');
   });
 
-  // --- 1. LOGIN PENGURUS ---
+  // 1. LOGIN PENGURUS
   document.getElementById('btn-login-pengurus').addEventListener('click', () => {
     const email = document.getElementById("p-email").value.trim();
     const pw = document.getElementById("p-password").value.trim();
@@ -133,7 +130,7 @@
     }
   });
 
-  // --- 2. DAFTAR ANGGOTA BARU ---
+  // 2. DAFTAR ANGGOTA BARU
   document.getElementById('btn-daftar-anggota').addEventListener('click', async () => {
     const noInduk = document.getElementById("reg-noinduk").value.trim();
     const nama = document.getElementById("reg-nama").value.trim();
@@ -144,8 +141,12 @@
       return;
     }
 
+    if (!db) {
+      alert("Koneksi Database belum siap. Silakan refresh halaman!");
+      return;
+    }
+
     try {
-      // Cek apakah No Induk sudah terdaftar di Firestore
       const q = query(collection(db, "users"), where("no_induk", "==", noInduk));
       const querySnapshot = await getDocs(q);
 
@@ -154,7 +155,6 @@
         return;
       }
 
-      // Simpan data pendaftaran ke Firestore
       await addDoc(collection(db, "users"), {
         no_induk: noInduk,
         nama: nama,
@@ -162,7 +162,6 @@
         role: "anggota"
       });
 
-      // Simpan Sesi Lokal
       localStorage.setItem("userLoggedIn", noInduk);
       localStorage.setItem("userRole", "anggota");
       localStorage.setItem("userName", nama);
@@ -175,13 +174,18 @@
     }
   });
 
-  // --- 3. LOGIN ANGGOTA ---
+  // 3. LOGIN ANGGOTA
   document.getElementById('btn-login-anggota').addEventListener('click', async () => {
     const noInduk = document.getElementById("a-noinduk").value.trim();
     const password = document.getElementById("a-password").value.trim();
 
     if (!noInduk || !password) {
       alert("Harap isi Nomor Induk dan Password!");
+      return;
+    }
+
+    if (!db) {
+      alert("Koneksi Database belum siap. Silakan refresh halaman!");
       return;
     }
 
