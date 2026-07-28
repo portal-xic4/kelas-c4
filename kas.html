@@ -8,52 +8,20 @@
   <meta name="theme-color" content="#4f46e5">
   <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://cdn.tailwindcss.com"></script>
- <script>
- // 1. Ambil data role dari LocalStorage
-const userRole = localStorage.getItem("userRole");
-const userLoggedIn = localStorage.getItem("userLoggedIn");
-
-// Jika belum login sama sekali, kembalikan ke halaman login
-if (!userLoggedIn) {
-  alert("Silakan login terlebih dahulu!");
-  window.location.href = "login.html";
-}
-
-// 2. Fungsi untuk mengatur tampilan berdasarkan Role
-function aturAksesRole() {
-  const isPengurus = (userRole === "pengurus");
-
-  // A. Sembunyikan Form Tambah Kas jika bukan pengurus
-  const formTambahContainer = document.getElementById("form-tambah-kas"); // Sesuaikan ID form kamu
-  if (formTambahContainer) {
-    formTambahContainer.style.display = isPengurus ? "block" : "none";
-  }
-
-  // B. Sembunyikan Tombol Edit, Hapus, dan Kolom Aksi di Tabel jika bukan pengurus
-  const tombolAksi = document.querySelectorAll(".btn-edit, .btn-hapus, .kolom-aksi");
-  tombolAksi.forEach(el => {
-    el.style.display = isPengurus ? "" : "none";
-  });
-}
-
-// 3. Jalankan fungsi di atas setelah halaman dan tabel selesai dimuat
-document.addEventListener("DOMContentLoaded", () => {
-  aturAksesRole();
-});
-</script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans pb-12">
 
   <nav class="bg-indigo-600 text-white p-4 shadow-md sticky top-0 z-50">
     <div class="container mx-auto flex justify-between items-center">
       <h1 class="text-xl font-bold">Kelas C4</h1>
-      <div class="space-x-4 text-sm font-medium">
+      <div class="flex items-center space-x-4 text-sm font-medium">
         <a href="index.html" class="hover:underline">Beranda</a>
         <a href="jadwal.html" class="hover:underline">Jadwal</a>
         <a href="piket.html" class="hover:underline">Piket</a>
         <a href="tugas.html" class="hover:underline">Tugas</a>
         <a href="absensi.html" class="hover:underline">Absensi</a>
         <a href="kas.html" class="underline font-bold">Kas Kelas</a>
+        <button onclick="logout()" class="bg-rose-500 hover:bg-rose-600 px-3 py-1 rounded text-white text-xs font-bold transition">Logout</button>
       </div>
     </div>
   </nav>
@@ -77,7 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <div class="flex justify-between items-center">
       <h2 class="text-xl font-bold text-slate-900">Laporan & Pencatatan Kas</h2>
-      <div class="space-x-2">
+      <div id="areaTombolPencatatan" class="space-x-2">
         <button onclick="toggleElement('formPemasukan')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded-lg font-medium transition">
           + Catat Pemasukan (Kas / Bantuan)
         </button>
@@ -139,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         <input type="text" id="ketPemasukanLain" placeholder="Keterangan (ex: Bantuan Beli AC, Hadiah Voli)" class="p-2.5 rounded-lg border border-slate-300 text-sm bg-white md:col-span-2" required>
         
-        <input type="number" id="nominalPemasukanLain" placeholder="Nominal (Rp)" class="p-2.5 rounded-lg border border-slate-300 text-sm bg-white" required min="1000">
+        <input type="number" id="nominalPemasukanLain" placeholder="Nominal (Rp)" class="p-2.5 rounded-lg border border-slate-300 text-sm" required min="1000">
 
         <button type="submit" class="md:col-span-4 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-2.5 rounded-lg text-sm transition">
           Simpan Pemasukan Bantuan / Lainnya
@@ -198,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <th class="p-2.5">Kategori</th>
               <th class="p-2.5">Keterangan</th>
               <th class="p-2.5">Nominal</th>
-              <th class="p-2.5 text-center">Aksi Edit/Hapus</th>
+              <th class="p-2.5 text-center kolom-aksi-header">Aksi Edit/Hapus</th>
             </tr>
           </thead>
           <tbody id="tabelPemasukanLain" class="divide-y text-slate-700">
@@ -220,7 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <th class="p-2.5">Keterangan</th>
               <th class="p-2.5">Nominal</th>
               <th class="p-2.5">Bukti Nota</th>
-              <th class="p-2.5 text-center">Aksi Edit/Hapus</th>
+              <th class="p-2.5 text-center kolom-aksi-header">Aksi Edit/Hapus</th>
             </tr>
           </thead>
           <tbody id="tabelPengeluaran" class="divide-y text-slate-700">
@@ -248,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <th class="p-2.5">Siswa</th>
                 <th class="p-2.5">Bulan</th>
                 <th class="p-2.5">Nominal</th>
-                <th class="p-2.5 text-center">Aksi Edit/Hapus</th>
+                <th class="p-2.5 text-center kolom-aksi-header">Aksi Edit/Hapus</th>
               </tr>
             </thead>
             <tbody id="tabelRiwayatPemasukan" class="divide-y text-slate-700">
@@ -273,6 +241,26 @@ document.addEventListener("DOMContentLoaded", () => {
   <script type="module">
     import { db } from "./firebase-config.js";
     import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+    // CEK HAK AKSES ROLE (PENGURUS VS ANGGOTA)
+    const userRole = localStorage.getItem("userRole");
+    const isPengurus = (userRole === "pengurus");
+
+    function terapkanAksesRole() {
+      if (!isPengurus) {
+        // 1. Sembunyikan Tombol "Catat Pemasukan & Pengeluaran"
+        const tombolCatat = document.getElementById("areaTombolPencatatan");
+        if (tombolCatat) tombolCatat.style.display = "none";
+
+        // 2. Sembunyikan Header Kolom Aksi Edit/Hapus di Tabel
+        const headers = document.querySelectorAll(".kolom-aksi-header");
+        headers.forEach(h => h.style.display = "none");
+
+        // 3. Sembunyikan Seluruh Tombol Edit & Hapus di Dalam Tabel
+        const btnAksi = document.querySelectorAll(".btn-aksi");
+        btnAksi.forEach(b => b.style.display = "none");
+      }
+    }
 
     const daftarSiswa = [
       "Agatha Clara Muljono", "Aileen Clarabelle Pranowo", "Alyssa Aurelia Margono", "Andrea Marie Kwesal",
@@ -453,6 +441,7 @@ document.addEventListener("DOMContentLoaded", () => {
       renderTabelRekap();
       renderTabelRiwayatPemasukan(snapshot.docs);
       kalkulasiTotalPemasukan();
+      terapkanAksesRole(); // PANGGUL PERNYATAAN HAK AKSES
     });
 
     // Realtime Listener Pemasukan Bantuan / Lainnya
@@ -475,7 +464,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td class="p-2.5 font-bold text-emerald-800">${d.kategori}</td>
             <td class="p-2.5 font-medium">${d.keterangan}</td>
             <td class="p-2.5 font-bold text-emerald-600">Rp ${Number(d.nominal).toLocaleString('id-ID')}</td>
-            <td class="p-2.5 text-center space-x-1">
+            <td class="p-2.5 text-center space-x-1 btn-aksi">
               <button onclick="editPemasukanLain('${id}', '${d.keterangan}', ${d.nominal})" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition">Edit</button>
               <button onclick="hapusPemasukanLain('${id}')" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition">Hapus</button>
             </td>
@@ -484,6 +473,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
       kalkulasiTotalPemasukan();
+      terapkanAksesRole();
     });
 
     // Realtime Listener Pengeluaran
@@ -511,7 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <td class="p-2.5 font-semibold">${d.keterangan}</td>
             <td class="p-2.5 text-rose-600 font-bold">Rp ${Number(d.nominal).toLocaleString("id-ID")}</td>
             <td class="p-2.5">${notaHtml}</td>
-            <td class="p-2.5 text-center space-x-1">
+            <td class="p-2.5 text-center space-x-1 btn-aksi">
               <button onclick="editPengeluaran('${id}', '${d.keterangan}', ${d.nominal}, '${d.nota || ''}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition">Edit</button>
               <button onclick="hapusPengeluaran('${id}')" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition">Hapus</button>
             </td>
@@ -521,6 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       document.getElementById("totalKeluar").textContent = `Rp ${totalPengeluaranNominal.toLocaleString("id-ID")}`;
       kalkulasiTotalPemasukan();
+      terapkanAksesRole();
     });
 
     // Hitung Total Pemasukan Gabungan & Saldo Akhir
@@ -532,8 +523,9 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("sisaSaldo").textContent = `Rp ${sisa.toLocaleString("id-ID")}`;
     }
 
-    // Fungsi Akses Global untuk Edit & Delete Bantuan
+    // Fungsi Akses Global untuk Edit & Delete
     window.editPemasukanLain = async (id, ketLama, nominalLama) => {
+      if(!isPengurus) return alert("Akses ditolak! Hanya pengurus yang bisa mengedit.");
       const ketBaru = prompt("Ubah keterangan bantuan/pemasukan:", ketLama);
       if (ketBaru === null) return;
       const nominalBaru = prompt("Ubah nominal (Rp):", nominalLama);
@@ -546,6 +538,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     window.hapusPemasukanLain = async (id) => {
+      if(!isPengurus) return alert("Akses ditolak! Hanya pengurus yang bisa menghapus.");
       if (confirm("Yakin hapus data bantuan ini?")) {
         try {
           await deleteDoc(doc(db, "pemasukan_lain_kas", id));
@@ -555,15 +548,17 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     window.editPemasukan = async (id, nama, nominalLama) => {
+      if(!isPengurus) return alert("Akses ditolak! Hanya pengurus yang bisa mengedit.");
       const nominalBaru = prompt(`Ubah nominal kas untuk ${nama}:`, nominalLama);
       if (nominalBaru) {
         try {
-          await updateDoc(doc(doc(db, "pemasukan_kas", id)), { nominal: Number(nominalBaru) });
+          await updateDoc(doc(db, "pemasukan_kas", id), { nominal: Number(nominalBaru) });
         } catch (err) { alert("Gagal edit: " + err.message); }
       }
     };
 
     window.hapusPemasukan = async (id) => {
+      if(!isPengurus) return alert("Akses ditolak! Hanya pengurus yang bisa menghapus.");
       if (confirm("Yakin hapus pembayaran ini?")) {
         try { await deleteDoc(doc(db, "pemasukan_kas", id)); } 
         catch (err) { alert("Gagal hapus: " + err.message); }
@@ -571,6 +566,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     window.editPengeluaran = async (id, ketLama, nominalLama, notaLama) => {
+      if(!isPengurus) return alert("Akses ditolak! Hanya pengurus yang bisa mengedit.");
       const ketBaru = prompt("Ubah keterangan pengeluaran:", ketLama);
       if (ketBaru === null) return;
       const nominalBaru = prompt("Ubah nominal (Rp):", nominalLama);
@@ -583,6 +579,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     window.hapusPengeluaran = async (id) => {
+      if(!isPengurus) return alert("Akses ditolak! Hanya pengurus yang bisa menghapus.");
       if (confirm("Yakin hapus catatan pengeluaran ini?")) {
         try { await deleteDoc(doc(db, "pengeluaran_kas", id)); } 
         catch (err) { alert("Gagal hapus: " + err.message); }
@@ -606,13 +603,14 @@ document.addEventListener("DOMContentLoaded", () => {
           <td class="p-2.5 font-semibold text-slate-800">${d.nama}</td>
           <td class="p-2.5 font-mono text-slate-500">${d.bulan}</td>
           <td class="p-2.5 font-bold text-emerald-600">Rp ${Number(d.nominal).toLocaleString('id-ID')}</td>
-          <td class="p-2.5 text-center space-x-1">
+          <td class="p-2.5 text-center space-x-1 btn-aksi">
             <button onclick="editPemasukan('${id}', '${d.nama}', ${d.nominal})" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition">Edit</button>
             <button onclick="hapusPemasukan('${id}')" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition">Hapus</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
+      terapkanAksesRole();
     }
 
     function renderTabelRekap() {
@@ -653,15 +651,16 @@ document.addEventListener("DOMContentLoaded", () => {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
       });
     }
-  </script>
 
-  <script>
+    // CEK SESI LOGIN & IDLE TIMEOUT
     (function () {
       const TIMEOUT_30_MENIT = 30 * 60 * 1000; 
       let idleTimer;
 
       function resetSesiLogin() {
         localStorage.removeItem("userLoggedIn");
+        localStorage.removeItem("userRole");
+        localStorage.removeItem("userName");
         alert("Sesi kamu telah berakhir karena tidak ada aktivitas selama 30 menit.");
         window.location.href = "login.html";
       }
@@ -681,10 +680,13 @@ document.addEventListener("DOMContentLoaded", () => {
         restartTimer();
       }
     })();
-    function logout() {
-  localStorage.removeItem("userLoggedIn");
-  window.location.href = "index.html";
-}
+
+    window.logout = function() {
+      localStorage.removeItem("userLoggedIn");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userName");
+      window.location.href = "login.html";
+    };
   </script>
 </body>
 </html>
