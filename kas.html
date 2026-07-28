@@ -8,14 +8,13 @@
   <meta name="theme-color" content="#4f46e5">
   <link rel="apple-touch-icon" href="icon-192.png">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-  // Cek apakah ada status login di localStorage
-  const user = localStorage.getItem("userLoggedIn");
+ <script>
+  const role = localStorage.getItem("userRole");
 
-  // Jika BELUM login, paksa balik ke login.html
-  if (!user) {
-    alert("Anda harus login sebagai pengurus terlebih dahulu!");
-    window.location.href = "login.html";
+  // Jika bukan pengurus, blokir & tendang ke beranda
+  if (role !== "pengurus") {
+    alert("Akses Ditolak! Halaman Kas Kelas hanya untuk Pengurus.");
+    window.location.href = "index.html";
   }
 </script>
 </head>
