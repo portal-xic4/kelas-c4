@@ -17,7 +17,7 @@
     .btn-submit { width: 100%; padding: 12px; background: #4f46e5; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
     .btn-submit:hover { background: #4338ca; }
     .toggle-link { margin-top: 15px; font-size: 0.85rem; color: #4f46e5; cursor: pointer; display: block; text-decoration: underline; }
-    .hidden { display: none; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -27,8 +27,8 @@
   <p style="font-size: 0.85rem; color: #666; margin-bottom: 20px;">Silakan masuk sesuai dengan hak akses Anda</p>
 
   <div class="tab-buttons">
-    <button type="button" class="tab-btn active" onclick="switchRole('anggota')">Anggota Siswa</button>
-    <button type="button" class="tab-btn" onclick="switchRole('pengurus')">Pengurus Kelas</button>
+    <button type="button" id="tab-btn-anggota" class="tab-btn active">Anggota Siswa</button>
+    <button type="button" id="tab-btn-pengurus" class="tab-btn">Pengurus Kelas</button>
   </div>
 
   <div id="form-pengurus" class="hidden">
@@ -40,7 +40,7 @@
       <label>Password</label>
       <input type="password" id="p-password" placeholder="••••••••">
     </div>
-    <button class="btn-submit" onclick="loginPengurus()">Masuk Pengurus</button>
+    <button type="button" id="btn-login-pengurus" class="btn-submit">Masuk Pengurus</button>
   </div>
 
   <div id="form-anggota-login">
@@ -52,8 +52,8 @@
       <label>Password</label>
       <input type="password" id="a-password" placeholder="••••••••">
     </div>
-    <button class="btn-submit" onclick="loginAnggota()">Masuk Siswa</button>
-    <span class="toggle-link" onclick="toggleDaftar(true)">Belum punya akun/password? Daftar di sini</span>
+    <button type="button" id="btn-login-anggota" class="btn-submit">Masuk Siswa</button>
+    <span class="toggle-link" id="link-ke-daftar">Belum punya akun/password? Daftar di sini</span>
   </div>
 
   <div id="form-anggota-daftar" class="hidden">
@@ -69,44 +69,56 @@
       <label>Buat Password Baru</label>
       <input type="password" id="reg-password" placeholder="Buat Password">
     </div>
-    <button class="btn-submit" style="background:#10b981;" onclick="daftarAnggota()">Buat Akun & Login</button>
-    <span class="toggle-link" onclick="toggleDaftar(false)">Sudah punya akun? Kembali ke Login</span>
+    <button type="button" id="btn-daftar-anggota" class="btn-submit" style="background:#10b981;">Buat Akun & Login</button>
+    <span class="toggle-link" id="link-ke-login">Sudah punya akun? Kembali ke Login</span>
   </div>
 </div>
 
 <script type="module">
   import { db } from "./firebase-config.js";
-  import { collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.x.x/firebase-firestore.js";
+  import { collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-  // Tab Switcher Role
-  window.switchRole = function(role) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    if (role === 'pengurus') {
-      event.target.classList.add('active');
-      document.getElementById('form-pengurus').classList.remove('hidden');
-      document.getElementById('form-anggota-login').classList.add('hidden');
-      document.getElementById('form-anggota-daftar').classList.add('hidden');
-    } else {
-      event.target.classList.add('active');
-      document.getElementById('form-pengurus').classList.add('hidden');
-      document.getElementById('form-anggota-login').classList.remove('hidden');
-      document.getElementById('form-anggota-daftar').classList.add('hidden');
-    }
-  }
+  // --- ELEMENT SELECTION ---
+  const tabAnggota = document.getElementById('tab-btn-anggota');
+  const tabPengurus = document.getElementById('tab-btn-pengurus');
+  
+  const formPengurus = document.getElementById('form-pengurus');
+  const formAnggotaLogin = document.getElementById('form-anggota-login');
+  const formAnggotaDaftar = document.getElementById('form-anggota-daftar');
 
-  // Toggle Daftar vs Login Anggota
-  window.toggleDaftar = function(isDaftar) {
-    if (isDaftar) {
-      document.getElementById('form-anggota-login').classList.add('hidden');
-      document.getElementById('form-anggota-daftar').classList.remove('hidden');
-    } else {
-      document.getElementById('form-anggota-login').classList.remove('hidden');
-      document.getElementById('form-anggota-daftar').classList.add('hidden');
-    }
-  }
+  const linkKeDaftar = document.getElementById('link-ke-daftar');
+  const linkKeLogin = document.getElementById('link-ke-login');
 
-  // 1. LOGIK LOGIN PENGURUS
-  window.loginPengurus = function() {
+  // --- TAB SWITCHER LOGIC ---
+  tabPengurus.addEventListener('click', () => {
+    tabPengurus.classList.add('active');
+    tabAnggota.classList.remove('active');
+    formPengurus.classList.remove('hidden');
+    formAnggotaLogin.classList.add('hidden');
+    formAnggotaDaftar.classList.add('hidden');
+  });
+
+  tabAnggota.addEventListener('click', () => {
+    tabAnggota.classList.add('active');
+    tabPengurus.classList.remove('active');
+    formPengurus.classList.add('hidden');
+    formAnggotaLogin.classList.remove('hidden');
+    formAnggotaDaftar.classList.add('hidden');
+  });
+
+  // --- TOGGLE DAFTAR VS LOGIN ANGGOTA ---
+  linkKeDaftar.addEventListener('click', () => {
+    formAnggotaLogin.classList.add('hidden');
+    formAnggotaDaftar.classList.remove('hidden');
+  });
+
+  linkKeLogin.addEventListener('click', () => {
+    formAnggotaDaftar.classList.add('hidden');
+    formAnggotaLogin.classList.remove('hidden');
+  });
+
+  // --- 1. LOGIN PENGURUS ---
+  document.getElementById('btn-login-pengurus').addEventListener('click', () => {
     const email = document.getElementById("p-email").value.trim();
     const pw = document.getElementById("p-password").value.trim();
 
@@ -119,10 +131,10 @@
     } else {
       alert("Email atau Password Pengurus Salah!");
     }
-  }
+  });
 
-  // 2. LOGIKA DAFTAR ANGGOTA (REGISTRASI)
-  window.daftarAnggota = async function() {
+  // --- 2. DAFTAR ANGGOTA BARU ---
+  document.getElementById('btn-daftar-anggota').addEventListener('click', async () => {
     const noInduk = document.getElementById("reg-noinduk").value.trim();
     const nama = document.getElementById("reg-nama").value.trim();
     const password = document.getElementById("reg-password").value.trim();
@@ -132,60 +144,69 @@
       return;
     }
 
-    // Cek apakah No Induk sudah terdaftar
-    const q = query(collection(db, "users"), where("no_induk", "==", noInduk));
-    const querySnapshot = await getDocs(q);
+    try {
+      // Cek apakah No Induk sudah terdaftar di Firestore
+      const q = query(collection(db, "users"), where("no_induk", "==", noInduk));
+      const querySnapshot = await getDocs(q);
 
-    if (!querySnapshot.empty) {
-      alert("Nomor Induk ini sudah memiliki akun! Silakan login.");
-      toggleDaftar(false);
-      return;
+      if (!querySnapshot.empty) {
+        alert("Nomor Induk ini sudah terdaftar! Silakan kembali ke form Login.");
+        return;
+      }
+
+      // Simpan data pendaftaran ke Firestore
+      await addDoc(collection(db, "users"), {
+        no_induk: noInduk,
+        nama: nama,
+        password: password,
+        role: "anggota"
+      });
+
+      // Simpan Sesi Lokal
+      localStorage.setItem("userLoggedIn", noInduk);
+      localStorage.setItem("userRole", "anggota");
+      localStorage.setItem("userName", nama);
+
+      alert(`Akun berhasil dibuat! Selamat datang, ${nama}`);
+      window.location.href = "index.html";
+    } catch (err) {
+      console.error(err);
+      alert("Gagal mendaftar: " + err.message);
     }
+  });
 
-    // Simpan Akun Baru ke Firestore
-    await addDoc(collection(db, "users"), {
-      no_induk: noInduk,
-      nama: nama,
-      password: password,
-      role: "anggota"
-    });
-
-    // Simpan Sesi di Browser
-    localStorage.setItem("userLoggedIn", noInduk);
-    localStorage.setItem("userRole", "anggota");
-    localStorage.setItem("userName", nama);
-
-    alert(`Akun berhasil dibuat! Selamat datang, ${nama}`);
-    window.location.href = "index.html";
-  }
-
-  // 3. LOGIKA LOGIN ANGGOTA
-  window.loginAnggota = async function() {
+  // --- 3. LOGIN ANGGOTA ---
+  document.getElementById('btn-login-anggota').addEventListener('click', async () => {
     const noInduk = document.getElementById("a-noinduk").value.trim();
     const password = document.getElementById("a-password").value.trim();
 
     if (!noInduk || !password) {
-      alert("Isi Nomor Induk dan Password!");
+      alert("Harap isi Nomor Induk dan Password!");
       return;
     }
 
-    const q = query(collection(db, "users"), where("no_induk", "==", noInduk), where("password", "==", password));
-    const querySnapshot = await getDocs(q);
+    try {
+      const q = query(collection(db, "users"), where("no_induk", "==", noInduk), where("password", "==", password));
+      const querySnapshot = await getDocs(q);
 
-    if (querySnapshot.empty) {
-      alert("Nomor Induk atau Password salah! Jika belum punya akun, klik 'Daftar di sini'.");
-    } else {
-      let userData;
-      querySnapshot.forEach(doc => userData = doc.data());
+      if (querySnapshot.empty) {
+        alert("Nomor Induk atau Password salah! Jika belum punya akun, klik 'Daftar di sini'.");
+      } else {
+        let userData;
+        querySnapshot.forEach(doc => userData = doc.data());
 
-      localStorage.setItem("userLoggedIn", userData.no_induk);
-      localStorage.setItem("userRole", "anggota");
-      localStorage.setItem("userName", userData.nama);
+        localStorage.setItem("userLoggedIn", userData.no_induk);
+        localStorage.setItem("userRole", "anggota");
+        localStorage.setItem("userName", userData.nama);
 
-      alert(`Selamat datang kembali, ${userData.nama}!`);
-      window.location.href = "index.html";
+        alert(`Selamat datang kembali, ${userData.nama}!`);
+        window.location.href = "index.html";
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Gagal login: " + err.message);
     }
-  }
+  });
 </script>
 </body>
 </html>
