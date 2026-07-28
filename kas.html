@@ -553,5 +553,47 @@
       });
     }
   </script>
+  <script>
+  (function () {
+    // 30 menit = 30 * 60 * 1000 milidetik
+    const TIMEOUT_30_MENIT = 30 * 60 * 1000; 
+    let idleTimer;
+
+    // 1. Fungsi Reset Sesi (Logout)
+    function resetSesiLogin() {
+      // Hapus data sesi dari localStorage
+      localStorage.removeItem("userLoggedIn");
+      
+      alert("Sesi kamu telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan pilih nama kembali.");
+      
+      // Lempar kembali ke halaman login
+      window.location.href = "login.html";
+    }
+
+    // 2. Fungsi Reset Timer Aktivitas
+    function restartTimer() {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(resetSesiLogin, TIMEOUT_30_MENIT);
+    }
+
+    // 3. Cek Status Login
+    const userAktif = localStorage.getItem("userLoggedIn");
+    
+    if (!userAktif) {
+      // Jika belum pilih nama di login.html, langsung arahkan ke login.html
+      window.location.href = "login.html";
+    } else {
+      // Daftar event yang mendeteksi aktivitas pengguna
+      const eventAktivitas = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+      
+      eventAktivitas.forEach(evt => {
+        window.addEventListener(evt, restartTimer, false);
+      });
+
+      // Jalankan timer saat halaman pertama kali dimuat
+      restartTimer();
+    }
+  })();
+</script>
 </body>
 </html>
