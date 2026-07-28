@@ -4,16 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kas Kelas - Kelas C4</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kelas C4</title>
-
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4f46e5">
   <link rel="apple-touch-icon" href="icon-192.png">
-  
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans pb-12">
@@ -53,7 +46,7 @@
       <h2 class="text-xl font-bold text-slate-900">Laporan & Pencatatan Kas</h2>
       <div class="space-x-2">
         <button onclick="toggleElement('formPemasukan')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded-lg font-medium transition">
-          + Catat Pembayaran Siswa
+          + Catat Pemasukan (Kas / Bantuan)
         </button>
         <button onclick="toggleElement('formPengeluaran')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-3 py-2 rounded-lg font-medium transition">
           - Catat Pengeluaran & Nota
@@ -62,9 +55,15 @@
     </div>
 
     <div id="formPemasukan" class="hidden bg-emerald-50 border border-emerald-200 p-5 rounded-xl shadow-sm space-y-3">
-      <h3 class="font-bold text-emerald-950 text-sm">Input Pembayaran Kas Siswa</h3>
+      <div class="flex justify-between items-center border-b border-emerald-200 pb-2">
+        <h3 class="font-bold text-emerald-950 text-sm">Input Pemasukan Kas</h3>
+        <select id="selectJenisPemasukan" class="p-1.5 rounded border border-emerald-300 text-xs font-bold text-emerald-900 bg-white">
+          <option value="kas_siswa">💳 Iuran Kas Siswa</option>
+          <option value="bantuan_lain">🏫 Bantuan Sekolah / Dana Lain</option>
+        </select>
+      </div>
+
       <form id="formBayarKas" class="grid grid-cols-1 md:grid-cols-6 gap-3">
-        
         <select id="selectSiswaKas" class="p-2.5 rounded-lg border border-slate-300 text-sm bg-white md:col-span-2" required>
           <option value="">-- Pilih Nama Siswa --</option>
         </select>
@@ -92,10 +91,27 @@
         <input type="number" id="inputNominal" placeholder="Total Bayar (Rp)" class="p-2.5 rounded-lg border border-slate-300 text-sm bg-white md:col-span-4" required min="1000">
         
         <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-sm transition py-2.5 md:col-span-2">
-          Simpan Pembayaran
+          Simpan Pembayaran Kas
         </button>
       </form>
       <p id="infoPeriode" class="text-xs text-emerald-800 font-medium italic"></p>
+
+      <form id="formPemasukanLain" class="hidden grid grid-cols-1 md:grid-cols-4 gap-3">
+        <select id="kategoriPemasukanLain" class="p-2.5 rounded-lg border border-slate-300 text-sm bg-white" required>
+          <option value="Bantuan Sekolah">🏫 Bantuan Sekolah</option>
+          <option value="Dana Sponsor">🤝 Dana Sponsor / Alumni</option>
+          <option value="Hadiah Lomba">🏆 Hadiah Lomba</option>
+          <option value="Sisa Acara/Lainnya">📦 Sisa Acara / Lain-lain</option>
+        </select>
+        
+        <input type="text" id="ketPemasukanLain" placeholder="Keterangan (ex: Bantuan Beli AC, Hadiah Voli)" class="p-2.5 rounded-lg border border-slate-300 text-sm bg-white md:col-span-2" required>
+        
+        <input type="number" id="nominalPemasukanLain" placeholder="Nominal (Rp)" class="p-2.5 rounded-lg border border-slate-300 text-sm bg-white" required min="1000">
+
+        <button type="submit" class="md:col-span-4 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold py-2.5 rounded-lg text-sm transition">
+          Simpan Pemasukan Bantuan / Lainnya
+        </button>
+      </form>
     </div>
 
     <div id="formPengeluaran" class="hidden bg-rose-50 border border-rose-200 p-5 rounded-xl shadow-sm space-y-3">
@@ -141,6 +157,27 @@
     </div>
 
     <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3">
+      <h3 class="font-bold text-slate-800 text-base">Riwayat Bantuan Sekolah & Dana Lainnya</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-emerald-50 text-emerald-900 uppercase">
+            <tr>
+              <th class="p-2.5">Kategori</th>
+              <th class="p-2.5">Keterangan</th>
+              <th class="p-2.5">Nominal</th>
+              <th class="p-2.5 text-center">Aksi Edit/Hapus</th>
+            </tr>
+          </thead>
+          <tbody id="tabelPemasukanLain" class="divide-y text-slate-700">
+            <tr>
+              <td colspan="4" class="p-4 text-center italic text-slate-400">Belum ada bantuan / dana luar yang dicatat.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3">
       <h3 class="font-bold text-slate-800 text-base">Riwayat Pengeluaran & Bukti Nota</h3>
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
@@ -164,7 +201,7 @@
 
     <div class="pt-4 border-t border-slate-200 text-center">
       <button onclick="toggleElement('areaRiwayatPemasukan')" class="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-sm transition">
-        Tampilkan / Menyembunyikan Riwayat Pembayaran Siswa
+        Tampilkan / Menyembunyikan Riwayat Pembayaran Kas Siswa
       </button>
     </div>
 
@@ -221,7 +258,7 @@
       "Januari 2027", "Februari 2027", "Maret 2027", "April 2027", "Mei 2027", "Juni 2027"
     ];
 
-    // Populate Dropdown Siswa
+    // Populasikan Dropdown Siswa & Bulan
     const selectSiswaKas = document.getElementById("selectSiswaKas");
     daftarSiswa.forEach((nama, i) => {
       const opt = document.createElement("option");
@@ -230,29 +267,32 @@
       selectSiswaKas.appendChild(opt);
     });
 
-    // Populate Dropdown Bulan (Tunggal, Awal, dan Akhir)
     const selectBulanTunggal = document.getElementById("selectBulanTunggal");
     const selectBulanAwal = document.getElementById("selectBulanAwal");
     const selectBulanAkhir = document.getElementById("selectBulanAkhir");
 
     bulanList.forEach((bln, idx) => {
-      const optTunggal = document.createElement("option");
-      optTunggal.value = idx;
-      optTunggal.textContent = bln;
-      selectBulanTunggal.appendChild(optTunggal);
-
-      const opt1 = document.createElement("option");
-      opt1.value = idx;
-      opt1.textContent = bln;
-      selectBulanAwal.appendChild(opt1);
-
-      const opt2 = document.createElement("option");
-      opt2.value = idx;
-      opt2.textContent = bln;
-      selectBulanAkhir.appendChild(opt2);
+      selectBulanTunggal.innerHTML += `<option value="${idx}">${bln}</option>`;
+      selectBulanAwal.innerHTML += `<option value="${idx}">${bln}</option>`;
+      selectBulanAkhir.innerHTML += `<option value="${idx}">${bln}</option>`;
     });
 
-    // Toggle Mode Pembayaran (1 Bulan / Rentang Bulan)
+    // Toggle Antara Form Kas Siswa vs Form Bantuan Sekolah
+    const selectJenisPemasukan = document.getElementById("selectJenisPemasukan");
+    const formBayarKas = document.getElementById("formBayarKas");
+    const formPemasukanLain = document.getElementById("formPemasukanLain");
+
+    selectJenisPemasukan.addEventListener("change", () => {
+      if (selectJenisPemasukan.value === "kas_siswa") {
+        formBayarKas.classList.remove("hidden");
+        formPemasukanLain.classList.add("hidden");
+      } else {
+        formBayarKas.classList.add("hidden");
+        formPemasukanLain.classList.remove("hidden");
+      }
+    });
+
+    // Toggle Mode Rentang Bulan
     const selectOpsiBayar = document.getElementById("selectOpsiBayar");
     const wrapperSatuBulan = document.getElementById("wrapperSatuBulan");
     const wrapperRentangBulan = document.getElementById("wrapperRentangBulan");
@@ -268,7 +308,6 @@
       hitungOtamatisNominal();
     });
 
-    // Kalkulasi Nominal Otomatis Bertahap
     function hitungOtamatisNominal() {
       const mode = selectOpsiBayar.value;
       const inputNominal = document.getElementById("inputNominal");
@@ -279,7 +318,6 @@
         if (!isNaN(idxTunggal)) {
           inputNominal.value = 30000;
           infoPeriode.textContent = `Membayar 1 bulan (${bulanList[idxTunggal]}) = Rp 30.000`;
-          infoPeriode.className = "text-xs text-emerald-800 font-medium italic";
         } else {
           inputNominal.value = "";
           infoPeriode.textContent = "";
@@ -290,16 +328,14 @@
 
         if (!isNaN(idxAwal) && !isNaN(idxAkhir)) {
           if (idxAkhir < idxAwal) {
-            infoPeriode.textContent = "Bulan akhir tidak boleh lebih awal dari bulan awal!";
+            infoPeriode.textContent = "Bulan akhir tidak boleh lebih awal!";
             infoPeriode.className = "text-xs text-rose-600 font-medium";
             inputNominal.value = "";
             return;
           }
-
           const jumlahBulan = (idxAkhir - idxAwal) + 1;
           const totalNominal = jumlahBulan * 30000;
           inputNominal.value = totalNominal;
-
           infoPeriode.textContent = `Menghitung ${jumlahBulan} bulan (${bulanList[idxAwal]} s/d ${bulanList[idxAkhir]}) = Rp ${totalNominal.toLocaleString('id-ID')}`;
           infoPeriode.className = "text-xs text-emerald-800 font-medium italic";
         }
@@ -310,7 +346,7 @@
     selectBulanAwal.addEventListener("change", hitungOtamatisNominal);
     selectBulanAkhir.addEventListener("change", hitungOtamatisNominal);
 
-    // Simpan Pembayaran Kas (Mendukung 1 Bulan & Rentang Bulan)
+    // 1. Simpan Pembayaran Kas Siswa
     document.getElementById("formBayarKas").addEventListener("submit", async (e) => {
       e.preventDefault();
       const nama = selectSiswaKas.value;
@@ -320,19 +356,12 @@
 
       if (mode === "1") {
         const idx = parseInt(selectBulanTunggal.value);
-        if (isNaN(idx)) {
-          alert("Silakan pilih bulan pembayaran!");
-          return;
-        }
+        if (isNaN(idx)) return alert("Silakan pilih bulan!");
         rentangBulan.push(bulanList[idx]);
       } else {
         const idxAwal = parseInt(selectBulanAwal.value);
         const idxAkhir = parseInt(selectBulanAkhir.value);
-
-        if (isNaN(idxAwal) || isNaN(idxAkhir) || idxAkhir < idxAwal) {
-          alert("Pilihan rentang bulan tidak valid!");
-          return;
-        }
+        if (isNaN(idxAwal) || isNaN(idxAkhir) || idxAkhir < idxAwal) return alert("Rentang bulan tidak valid!");
         rentangBulan = bulanList.slice(idxAwal, idxAkhir + 1);
       }
 
@@ -341,28 +370,31 @@
       try {
         for (const bln of rentangBulan) {
           await addDoc(collection(db, "pemasukan_kas"), {
-            nama,
-            bulan: bln,
-            nominal: nominalPerBulan,
-            timestamp: new Date()
+            nama, bulan: bln, nominal: nominalPerBulan, timestamp: new Date()
           });
         }
-
-        alert(`Berhasil! Pembayaran kas untuk ${nama} (${rentangBulan.join(", ")}) telah tersimpan!`);
+        alert(`Berhasil menyimpan kas siswa ${nama}!`);
         document.getElementById("formBayarKas").reset();
-        
-        // Reset tampilan ke mode bawaan (1 bulan)
-        selectOpsiBayar.value = "1";
-        wrapperSatuBulan.classList.remove("hidden");
-        wrapperRentangBulan.classList.add("hidden");
-        document.getElementById("infoPeriode").textContent = "";
-
-      } catch (err) {
-        alert("Gagal menyimpan data: " + err.message);
-      }
+      } catch (err) { alert("Gagal menyimpan data: " + err.message); }
     });
 
-    // Simpan Pengeluaran
+    // 2. Simpan Pemasukan Bantuan Sekolah / Dana Lainnya
+    document.getElementById("formPemasukanLain").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const kategori = document.getElementById("kategoriPemasukanLain").value;
+      const keterangan = document.getElementById("ketPemasukanLain").value;
+      const nominal = parseInt(document.getElementById("nominalPemasukanLain").value);
+
+      try {
+        await addDoc(collection(db, "pemasukan_lain_kas"), {
+          kategori, keterangan, nominal, timestamp: new Date()
+        });
+        alert(`Berhasil mencatat ${kategori}!`);
+        document.getElementById("formPemasukanLain").reset();
+      } catch (err) { alert("Gagal menyimpan bantuan: " + err.message); }
+    });
+
+    // 3. Simpan Pengeluaran
     document.getElementById("formKeluarKas").addEventListener("submit", async (e) => {
       e.preventDefault();
       const tanggal = document.getElementById("tglKeluar").value;
@@ -377,19 +409,152 @@
       } catch (err) { alert("Gagal mencatat pengeluaran: " + err.message); }
     });
 
-    // Realtime Pemasukan
-    let dataPemasukan = [];
-    let totalPemasukanNominal = 0;
+    // Realtime Listener Pemasukan Kas Siswa
+    let dataPemasukanKas = [];
+    let totalNominalKasSiswa = 0;
 
     onSnapshot(collection(db, "pemasukan_kas"), (snapshot) => {
-      dataPemasukan = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      totalPemasukanNominal = dataPemasukan.reduce((acc, curr) => acc + (curr.nominal || 0), 0);
-      document.getElementById("totalMasuk").textContent = `Rp ${totalPemasukanNominal.toLocaleString("id-ID")}`;
+      dataPemasukanKas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      totalNominalKasSiswa = dataPemasukanKas.reduce((acc, curr) => acc + (curr.nominal || 0), 0);
       
       renderTabelRekap();
       renderTabelRiwayatPemasukan(snapshot.docs);
-      updateSaldo();
+      kalkulasiTotalPemasukan();
     });
+
+    // Realtime Listener Pemasukan Bantuan / Lainnya
+    let totalNominalBantuan = 0;
+    onSnapshot(collection(db, "pemasukan_lain_kas"), (snapshot) => {
+      const tbody = document.getElementById("tabelPemasukanLain");
+      tbody.innerHTML = "";
+      totalNominalBantuan = 0;
+
+      if (snapshot.empty) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center italic text-slate-400">Belum ada bantuan / dana luar yang dicatat.</td></tr>';
+      } else {
+        snapshot.docs.forEach(docSnap => {
+          const d = docSnap.data();
+          const id = docSnap.id;
+          totalNominalBantuan += (d.nominal || 0);
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="p-2.5 font-bold text-emerald-800">${d.kategori}</td>
+            <td class="p-2.5 font-medium">${d.keterangan}</td>
+            <td class="p-2.5 font-bold text-emerald-600">Rp ${Number(d.nominal).toLocaleString('id-ID')}</td>
+            <td class="p-2.5 text-center space-x-1">
+              <button onclick="editPemasukanLain('${id}', '${d.keterangan}', ${d.nominal})" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition">Edit</button>
+              <button onclick="hapusPemasukanLain('${id}')" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition">Hapus</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      kalkulasiTotalPemasukan();
+    });
+
+    // Realtime Listener Pengeluaran
+    let totalPengeluaranNominal = 0;
+    onSnapshot(collection(db, "pengeluaran_kas"), (snapshot) => {
+      const tbody = document.getElementById("tabelPengeluaran");
+      tbody.innerHTML = "";
+      totalPengeluaranNominal = 0;
+
+      if (snapshot.empty) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center italic text-slate-400">Belum ada pengeluaran dicatat.</td></tr>';
+      } else {
+        snapshot.docs.forEach(docSnap => {
+          const d = docSnap.data();
+          const id = docSnap.id;
+          totalPengeluaranNominal += (d.nominal || 0);
+          
+          const notaHtml = d.nota 
+            ? `<a href="${d.nota}" target="_blank" class="text-indigo-600 underline font-semibold">Lihat Nota</a>` 
+            : '<span class="text-slate-400">-</span>';
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="p-2.5 font-medium">${d.tanggal}</td>
+            <td class="p-2.5 font-semibold">${d.keterangan}</td>
+            <td class="p-2.5 text-rose-600 font-bold">Rp ${Number(d.nominal).toLocaleString("id-ID")}</td>
+            <td class="p-2.5">${notaHtml}</td>
+            <td class="p-2.5 text-center space-x-1">
+              <button onclick="editPengeluaran('${id}', '${d.keterangan}', ${d.nominal}, '${d.nota || ''}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition">Edit</button>
+              <button onclick="hapusPengeluaran('${id}')" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition">Hapus</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+      document.getElementById("totalKeluar").textContent = `Rp ${totalPengeluaranNominal.toLocaleString("id-ID")}`;
+      kalkulasiTotalPemasukan();
+    });
+
+    // Hitung Total Pemasukan Gabungan & Saldo Akhir
+    function kalkulasiTotalPemasukan() {
+      const totalPemasukanSemua = totalNominalKasSiswa + totalNominalBantuan;
+      document.getElementById("totalMasuk").textContent = `Rp ${totalPemasukanSemua.toLocaleString("id-ID")}`;
+      
+      const sisa = totalPemasukanSemua - totalPengeluaranNominal;
+      document.getElementById("sisaSaldo").textContent = `Rp ${sisa.toLocaleString("id-ID")}`;
+    }
+
+    // Fungsi Akses Global untuk Edit & Delete Bantuan
+    window.editPemasukanLain = async (id, ketLama, nominalLama) => {
+      const ketBaru = prompt("Ubah keterangan bantuan/pemasukan:", ketLama);
+      if (ketBaru === null) return;
+      const nominalBaru = prompt("Ubah nominal (Rp):", nominalLama);
+      if (nominalBaru !== null) {
+        try {
+          await updateDoc(doc(db, "pemasukan_lain_kas", id), { keterangan: ketBaru, nominal: Number(nominalBaru) });
+          alert("Pemasukan diperbarui!");
+        } catch (e) { alert("Gagal update: " + e.message); }
+      }
+    };
+
+    window.hapusPemasukanLain = async (id) => {
+      if (confirm("Yakin hapus data bantuan ini?")) {
+        try {
+          await deleteDoc(doc(db, "pemasukan_lain_kas", id));
+          alert("Berhasil dihapus!");
+        } catch (e) { alert("Gagal hapus: " + e.message); }
+      }
+    };
+
+    window.editPemasukan = async (id, nama, nominalLama) => {
+      const nominalBaru = prompt(`Ubah nominal kas untuk ${nama}:`, nominalLama);
+      if (nominalBaru) {
+        try {
+          await updateDoc(doc(doc(db, "pemasukan_kas", id)), { nominal: Number(nominalBaru) });
+        } catch (err) { alert("Gagal edit: " + err.message); }
+      }
+    };
+
+    window.hapusPemasukan = async (id) => {
+      if (confirm("Yakin hapus pembayaran ini?")) {
+        try { await deleteDoc(doc(db, "pemasukan_kas", id)); } 
+        catch (err) { alert("Gagal hapus: " + err.message); }
+      }
+    };
+
+    window.editPengeluaran = async (id, ketLama, nominalLama, notaLama) => {
+      const ketBaru = prompt("Ubah keterangan pengeluaran:", ketLama);
+      if (ketBaru === null) return;
+      const nominalBaru = prompt("Ubah nominal (Rp):", nominalLama);
+      if (nominalBaru === null) return;
+      const notaBaru = prompt("Ubah link nota:", notaLama);
+
+      try {
+        await updateDoc(doc(db, "pengeluaran_kas", id), { keterangan: ketBaru, nominal: Number(nominalBaru), nota: notaBaru });
+      } catch (err) { alert("Gagal edit: " + err.message); }
+    };
+
+    window.hapusPengeluaran = async (id) => {
+      if (confirm("Yakin hapus catatan pengeluaran ini?")) {
+        try { await deleteDoc(doc(db, "pengeluaran_kas", id)); } 
+        catch (err) { alert("Gagal hapus: " + err.message); }
+      }
+    };
 
     function renderTabelRiwayatPemasukan(docs) {
       const tbody = document.getElementById("tabelRiwayatPemasukan");
@@ -417,97 +582,6 @@
       });
     }
 
-    window.editPemasukan = async (id, nama, nominalLama) => {
-      const nominalBaru = prompt(`Ubah nominal kas untuk ${nama}:`, nominalLama);
-      if (nominalBaru !== null && nominalBaru !== "") {
-        try {
-          await updateDoc(doc(db, "pemasukan_kas", id), { nominal: Number(nominalBaru) });
-          alert("Nominal berhasil diperbarui!");
-        } catch (err) { alert("Gagal mengedit: " + err.message); }
-      }
-    };
-
-    window.hapusPemasukan = async (id) => {
-      if (confirm("Yakin ingin menghapus transaksi pembayaran ini?")) {
-        try {
-          await deleteDoc(doc(db, "pemasukan_kas", id));
-          alert("Data transaksi berhasil dihapus!");
-        } catch (err) { alert("Gagal menghapus: " + err.message); }
-      }
-    };
-
-    // Realtime Listener Pengeluaran
-    let totalPengeluaranNominal = 0;
-    onSnapshot(collection(db, "pengeluaran_kas"), (snapshot) => {
-      const tbody = document.getElementById("tabelPengeluaran");
-      tbody.innerHTML = "";
-      totalPengeluaranNominal = 0;
-
-      if (snapshot.empty) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center italic text-slate-400">Belum ada pengeluaran dicatat.</td></tr>';
-      } else {
-        snapshot.docs.forEach(docSnap => {
-          const d = docSnap.data();
-          const id = docSnap.id;
-          totalPengeluaranNominal += (d.nominal || 0);
-          
-          const tr = document.createElement("tr");
-          const notaHtml = d.nota 
-            ? `<a href="${d.nota}" target="_blank" class="text-indigo-600 underline font-semibold">Lihat Nota</a>` 
-            : '<span class="text-slate-400">-</span>';
-
-          tr.innerHTML = `
-            <td class="p-2.5 font-medium">${d.tanggal}</td>
-            <td class="p-2.5 font-semibold">${d.keterangan}</td>
-            <td class="p-2.5 text-rose-600 font-bold">Rp ${Number(d.nominal).toLocaleString("id-ID")}</td>
-            <td class="p-2.5">${notaHtml}</td>
-            <td class="p-2.5 text-center space-x-1">
-              <button onclick="editPengeluaran('${id}', '${d.keterangan}', ${d.nominal}, '${d.nota || ''}')" class="bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition">Edit</button>
-              <button onclick="hapusPengeluaran('${id}')" class="bg-rose-500 hover:bg-rose-600 text-white text-[10px] font-bold px-2.5 py-1 rounded transition">Hapus</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
-      }
-      document.getElementById("totalKeluar").textContent = `Rp ${totalPengeluaranNominal.toLocaleString("id-ID")}`;
-      updateSaldo();
-    });
-
-    // Fungsi Edit Pengeluaran
-    window.editPengeluaran = async (id, ketLama, nominalLama, notaLama) => {
-      const ketBaru = prompt("Ubah keterangan pengeluaran:", ketLama);
-      if (ketBaru === null) return;
-
-      const nominalBaru = prompt("Ubah nominal pengeluaran (Rp):", nominalLama);
-      if (nominalBaru === null) return;
-
-      const notaBaru = prompt("Ubah link nota (opsional):", notaLama);
-
-      try {
-        await updateDoc(doc(db, "pengeluaran_kas", id), {
-          keterangan: ketBaru,
-          nominal: Number(nominalBaru),
-          nota: notaBaru
-        });
-        alert("Pengeluaran berhasil diperbarui!");
-      } catch (err) {
-        alert("Gagal mengedit pengeluaran: " + err.message);
-      }
-    };
-
-    // Fungsi Hapus Pengeluaran
-    window.hapusPengeluaran = async (id) => {
-      if (confirm("Yakin ingin menghapus catatan pengeluaran ini? Sisa saldo akan otomatis dihitung ulang.")) {
-        try {
-          await deleteDoc(doc(db, "pengeluaran_kas", id));
-          alert("Catatan pengeluaran berhasil dihapus!");
-        } catch (err) {
-          alert("Gagal menghapus pengeluaran: " + err.message);
-        }
-      }
-    };
-
-    // Render Tabel Rekap
     function renderTabelRekap() {
       const tbody = document.getElementById("tabelRekapKas");
       tbody.innerHTML = "";
@@ -517,7 +591,7 @@
         let htmlBulan = "";
 
         bulanList.forEach(bln => {
-          const totalBayarBulan = dataPemasukan
+          const totalBayarBulan = dataPemasukanKas
             .filter(p => p.nama === nama && p.bulan === bln)
             .reduce((sum, item) => sum + item.nominal, 0);
 
@@ -538,62 +612,42 @@
         tbody.appendChild(tr);
       });
     }
-
-    function updateSaldo() {
-      const sisa = totalPemasukanNominal - totalPengeluaranNominal;
-      document.getElementById("sisaSaldo").textContent = `Rp ${sisa.toLocaleString("id-ID")}`;
-    }
   </script>
+
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then((reg) => console.log('PWA Service Worker terdaftar!', reg))
-          .catch((err) => console.error('PWA Gagal terdaftar:', err));
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
       });
     }
   </script>
+
   <script>
-  (function () {
-    // 30 menit = 30 * 60 * 1000 milidetik
-    const TIMEOUT_30_MENIT = 30 * 60 * 1000; 
-    let idleTimer;
+    (function () {
+      const TIMEOUT_30_MENIT = 30 * 60 * 1000; 
+      let idleTimer;
 
-    // 1. Fungsi Reset Sesi (Logout)
-    function resetSesiLogin() {
-      // Hapus data sesi dari localStorage
-      localStorage.removeItem("userLoggedIn");
-      
-      alert("Sesi kamu telah berakhir karena tidak ada aktivitas selama 30 menit. Silakan pilih nama kembali.");
-      
-      // Lempar kembali ke halaman login
-      window.location.href = "login.html";
-    }
+      function resetSesiLogin() {
+        localStorage.removeItem("userLoggedIn");
+        alert("Sesi kamu telah berakhir karena tidak ada aktivitas selama 30 menit.");
+        window.location.href = "login.html";
+      }
 
-    // 2. Fungsi Reset Timer Aktivitas
-    function restartTimer() {
-      clearTimeout(idleTimer);
-      idleTimer = setTimeout(resetSesiLogin, TIMEOUT_30_MENIT);
-    }
+      function restartTimer() {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(resetSesiLogin, TIMEOUT_30_MENIT);
+      }
 
-    // 3. Cek Status Login
-    const userAktif = localStorage.getItem("userLoggedIn");
-    
-    if (!userAktif) {
-      // Jika belum pilih nama di login.html, langsung arahkan ke login.html
-      window.location.href = "login.html";
-    } else {
-      // Daftar event yang mendeteksi aktivitas pengguna
-      const eventAktivitas = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-      
-      eventAktivitas.forEach(evt => {
-        window.addEventListener(evt, restartTimer, false);
-      });
-
-      // Jalankan timer saat halaman pertama kali dimuat
-      restartTimer();
-    }
-  })();
-</script>
+      const userAktif = localStorage.getItem("userLoggedIn");
+      if (!userAktif) {
+        window.location.href = "login.html";
+      } else {
+        ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
+          window.addEventListener(evt, restartTimer, false);
+        });
+        restartTimer();
+      }
+    })();
+  </script>
 </body>
 </html>
