@@ -433,6 +433,13 @@
       restartTimer();
     }
   })();
+    const role = localStorage.getItem("userRole");
+
+// Jika Anggota: Sembunyikan tombol 'Tambah/Hapus Tugas'
+if (role !== "pengurus") {
+  document.querySelectorAll(".btn-hapus-tugas").forEach(btn => btn.style.display = "none");
+  document.getElementById("form-tambah-tugas").style.display = "none";
+}
 </script>
 </body>
 </html>
