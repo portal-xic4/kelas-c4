@@ -75,10 +75,7 @@
 </div>
 
 <script type="module">
-  // 1. Import db dari firebase-config.js milikmu
   import { db } from "./firebase-config.js";
-
-  // 2. Import fungsi Firestore dengan VERSI YANGSAMA (12.16.0)
   import { 
     collection, 
     query, 
@@ -129,7 +126,8 @@
     const pw = document.getElementById("p-password").value.trim();
 
     if (email === "penguruskelasc4@gmail.com" && pw === "PengurusC4") {
-      localStorage.setItem("userLoggedIn", email);
+      localStorage.setItem("userLoggedIn", "true");
+      localStorage.setItem("userNoInduk", email);
       localStorage.setItem("userRole", "pengurus");
       localStorage.setItem("userName", "Pengurus Kelas");
       alert("Login Pengurus Berhasil!");
@@ -166,7 +164,8 @@
         role: "anggota"
       });
 
-      localStorage.setItem("userLoggedIn", noInduk);
+      localStorage.setItem("userLoggedIn", "true");
+      localStorage.setItem("userNoInduk", noInduk);
       localStorage.setItem("userRole", "anggota");
       localStorage.setItem("userName", nama);
 
@@ -198,7 +197,8 @@
         let userData;
         querySnapshot.forEach(doc => userData = doc.data());
 
-        localStorage.setItem("userLoggedIn", userData.no_induk);
+        localStorage.setItem("userLoggedIn", "true");
+        localStorage.setItem("userNoInduk", userData.no_induk);
         localStorage.setItem("userRole", "anggota");
         localStorage.setItem("userName", userData.nama);
 
@@ -210,15 +210,6 @@
       alert("Gagal login: " + err.message);
     }
   });
-  document.getElementById("formLogin").addEventListener("submit", async (e) => {
-  e.preventDefault(); // <-- PENTING! Agar halaman tidak auto-refresh saat submit
-  
-  // Logika login kamu...
-  localStorage.setItem("userLoggedIn", "true");
-  localStorage.setItem("userRole", role);
-  
-  window.location.href = "index.html"; // Baru pindah halaman
-});
 </script>
 </body>
 </html>
